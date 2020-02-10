@@ -23,6 +23,8 @@ parser.add_option("-P", "--password", dest="password", metavar="<password>",
                   help="Password to use when connecting to SMTP server.")
 parser.add_option("--body", dest="body", metavar="<message>",
                   help="Use this option to specify the body of the email message.")
+parser.add_option("--header", dest="header", action="append", metavar="<header>",
+                  help="Use this option to set an arbitrary header in the message. You can use it multiple times.")
 parser.add_option("--mailto", dest="mailto", action="append", metavar="recipient@your.net",
                   help="You can send a message to multiple recipients by repeating this option or by separating the email addresses with commas (no whitespace allowed).")
 parser.add_option("--mailfrom", dest="mailfrom", metavar="sender@your.net",
@@ -54,7 +56,11 @@ try:
 
     server.login(options.username, options.password)
 
-    message = "Subject: Testing Nagios SMTP\nTo: %s\nFrom: %s\n\n%s" % (",".join(options.mailto),options.mailfrom,options.body)
+    message = "From: %s\n" % (options.mailfrom)
+    message += "To: %s\n" % ",".join(options.mailto)
+    if options.header:
+        message += "\n".join(options.header)
+    message += "\n%s" % (options.body)
     server.sendmail(options.mailfrom, options.mailto, message)
 except:
     print ("SMTP SEND CRITICAL - Could not connect to %s port %d" % (options.hostname, options.port))
