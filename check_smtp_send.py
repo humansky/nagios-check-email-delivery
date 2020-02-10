@@ -44,6 +44,7 @@ elif not options.port:
 
 status = { 'OK' : 0, 'WARNING' : 1, 'CRITICAL' : 2, 'UNKNOWN' : 3 }
 
+time_start = time.time()
 try:
     context = ssl.SSLContext()
     server = smtplib.SMTP(host=options.hostname, port=options.port, timeout=options.timeout)
@@ -65,6 +66,15 @@ try:
 except:
     print ("SMTP SEND CRITICAL - Could not connect to %s port %d" % (options.hostname, options.port))
     sys.exit(status['CRITICAL'])
+time_end = time.time()
+elapsedtime = time_end - time_start
 
-print ("SMTP SEND OK")
-sys.exit(status['OK'])
+if elapsedtime > options.critical:
+    print ("SMTP SEND CRITICAL - %d seconds" % (elapsedtime))
+    sys.exit(status['CRITICAL'])
+elif elapsedtime > options.warning:
+    print ("SMTP SEND WARNING - %d seconds" % (elapsedtime))
+    sys.exit(status['WARNING'])
+else:
+    print ("SMTP SEND OK - %d seconds" % (elapsedtime))
+    sys.exit(status['OK'])
